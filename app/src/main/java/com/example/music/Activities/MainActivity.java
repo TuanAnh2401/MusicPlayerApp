@@ -7,19 +7,23 @@ import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 
+import com.example.music.Database.AppDatabase;
 import com.example.music.Fragments.HomeFragment;
+import com.example.music.Fragments.LibraryFragment;
 import com.example.music.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
     private FrameLayout fragmentHolder;
+    private AppDatabase appDatabase;
     private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        appDatabase = AppDatabase.getInstance(this);
 
         fragmentHolder = findViewById(R.id.main_frame_layout);
 
@@ -30,10 +34,12 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.home) {
                 setFragment(new HomeFragment());
                 return true;
+            } else if (item.getItemId() == R.id.library) {
+                setFragment(new LibraryFragment());
+                return true;
             }
             return false;
         });
-
         bottomNavigationView.setSelectedItemId(R.id.home);
 
     }
@@ -44,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
+    public AppDatabase getAppDatabase() {
+        return appDatabase;
+    }
 
 }

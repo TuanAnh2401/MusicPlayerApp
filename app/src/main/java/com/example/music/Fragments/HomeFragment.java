@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
-import com.example.music.Adapters.AlbumAdapter;
 import com.example.music.Adapters.CategoryAdapter;
 import com.example.music.Adapters.ListAdapter;
 import com.example.music.Adapters.SliderAdapter;
@@ -20,7 +19,6 @@ import com.example.music.Models.AlbumModel;
 import com.example.music.Models.CategoryModel;
 import com.example.music.Models.ListModel;
 import com.example.music.Models.SliderModel;
-import com.example.music.Models.SongModel;
 import com.example.music.R;
 import com.example.music.Utils.SliderTimer;
 import com.example.music.Viewmodel.HomeViewModel;

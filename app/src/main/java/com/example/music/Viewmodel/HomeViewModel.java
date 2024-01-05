@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.music.Database.AppDatabase;
+import com.example.music.Entity.SongEntity;
 import com.example.music.Models.AlbumModel;
 import com.example.music.Models.CategoryModel;
 import com.example.music.Models.ListModel;
@@ -26,6 +28,12 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<SongModel>> songData = new MutableLiveData<>();
     private MutableLiveData<List<ListModel>> albumData = new MutableLiveData<>();
     private MutableLiveData<List<SongModel>> allSongsData = new MutableLiveData<>();
+    private AppDatabase appDatabase;
+    public HomeViewModel() {
+    }
+    public HomeViewModel(AppDatabase appDatabase) {
+        this.appDatabase = appDatabase;
+    }
     public LiveData<List<SongModel>> getAllSongsData() {
         loadAllSongs();
         return allSongsData;
@@ -164,6 +172,8 @@ public class HomeViewModel extends ViewModel {
                 });
 
     }
-
+    public LiveData<List<SongEntity>> getAllSongsDataFromDao() {
+        return appDatabase.songDao().getAllSongsLiveData();
+    }
 }
 

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.music.Activities.SongPlayerActivity;
 import com.example.music.Adapters.ListSongAdapter;
+import com.example.music.Database.AppDatabase;
 import com.example.music.Models.AlbumModel;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
@@ -31,10 +32,11 @@ public class AlbumFragment extends Fragment {
     private Button btnShuffle;
     private RecyclerView songRecyclerView;
     private ImageButton btnBack;
-
+    AppDatabase appDatabase;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album, container, false);
+        appDatabase = AppDatabase.getInstance(requireContext());
 
         albumImage = view.findViewById(R.id.albumImage);
         albumName = view.findViewById(R.id.txtAlbumName);
@@ -83,7 +85,7 @@ public class AlbumFragment extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         songRecyclerView.setLayoutManager(layoutManager);
 
-        ListSongAdapter listSongAdapter = new ListSongAdapter(allSongs, getContext());
+        ListSongAdapter listSongAdapter = new ListSongAdapter(allSongs, getContext(),appDatabase);
         songRecyclerView.setAdapter(listSongAdapter);
     }
 
