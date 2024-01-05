@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.widget.FrameLayout;
 
 import com.example.music.Fragments.HomeFragment;
-import com.example.music.Fragments.SignInFragment;
 import com.example.music.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,11 +21,18 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentHolder = findViewById(R.id.main_frame_layout);
 
-        setFragment(new HomeFragment());
+        if (savedInstanceState == null) {
+            setFragment(new HomeFragment());
+        }
+
     }
+
     private void setFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(fragmentHolder.getId(),fragment);
+        fragmentTransaction.replace(fragmentHolder.getId(), fragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
+
 }

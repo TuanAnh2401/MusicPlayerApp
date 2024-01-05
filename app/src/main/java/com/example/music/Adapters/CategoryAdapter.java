@@ -49,9 +49,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext, RecyclerView.HORIZONTAL, false);
         holder.songs.setLayoutManager(linearLayoutManager);
 
-        SongAdapter songAdapter = new SongAdapter();
+        SongAdapter songAdapter = new SongAdapter(mContext);
         songAdapter.setData(category.getSongs());
         holder.songs.setAdapter(songAdapter);
+
     }
 
     @Override
