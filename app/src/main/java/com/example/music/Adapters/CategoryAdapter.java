@@ -62,6 +62,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         }
         return 0;
     }
+
     public class CategoryViewHolder extends RecyclerView.ViewHolder {
         private TextView nameCategory;
         private RecyclerView songs;
@@ -72,4 +73,5 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             songs = itemView.findViewById(R.id.rcvSong);
         }
     }
+
 }

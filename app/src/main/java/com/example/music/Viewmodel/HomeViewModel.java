@@ -6,20 +6,26 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.music.Models.AlbumModel;
 import com.example.music.Models.CategoryModel;
+import com.example.music.Models.ListModel;
 import com.example.music.Models.SliderModel;
 import com.example.music.Models.SongModel;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<CategoryModel>> categoryData = new MutableLiveData<>();
     private MutableLiveData<List<SliderModel>> sliderData = new MutableLiveData<>();
     private MutableLiveData<List<SongModel>> songData = new MutableLiveData<>();
+    private MutableLiveData<List<ListModel>> albumData = new MutableLiveData<>();
+
 
     public LiveData<List<CategoryModel>> getCategoryData() {
         loadCategoryData();
@@ -31,43 +37,10 @@ public class HomeViewModel extends ViewModel {
         return sliderData;
     }
 
-    public LiveData<List<SongModel>> getSongData() {
-        loadSongData();
-        return songData;
+    public LiveData<List<ListModel>> getAlbumData() {
+        loadAlbumData();
+        return albumData;
     }
-
-    private void loadCategoryData() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("categories")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<CategoryModel> categoryList = new ArrayList<>();
-                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                        String categoryName = documentSnapshot.getString("categoryName");
-                        List<SongModel> songs = new ArrayList<>();
-                        db.collection("songs")
-                                .whereEqualTo("category", categoryName)
-                                .get()
-                                .addOnSuccessListener(songQueryDocumentSnapshots -> {
-                                    for (QueryDocumentSnapshot songDocumentSnapshot : songQueryDocumentSnapshots) {
-                                        SongModel song = songDocumentSnapshot.toObject(SongModel.class);
-                                        songs.add(song);
-                                    }
-
-                                    // Log danh sách bài hát trong mỗi loại
-                                    Log.d("CategoryData", "Category: " + categoryName);
-                                    for (SongModel song : songs) {
-                                        Log.d("CategoryData", "Song: " + song.getName());
-                                    }
-
-                                    CategoryModel category = new CategoryModel(categoryName, songs);
-                                    categoryList.add(category);
-                                    categoryData.setValue(categoryList);
-                                });
-                    }
-                });
-    }
-
 
     private void loadSliderData() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -84,19 +57,90 @@ public class HomeViewModel extends ViewModel {
                     sliderData.setValue(sliderList);
                 });
     }
-
-    private void loadSongData() {
+    private void loadCategoryData() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("songs")
+        List<CategoryModel> categoryList = new ArrayList<>();
+        List<SongModel> getLatestSongsData = loadLatestSongsData();
+        CategoryModel category = new CategoryModel("Mới phát hành", getLatestSongsData);
+        categoryList.add(category);
+
+        db.collection("categories")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<SongModel> songList = new ArrayList<>();
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String categoryName = documentSnapshot.getString("categoryName");
+                        List<SongModel> songs = new ArrayList<>();
+                        db.collection("songs")
+                                .whereEqualTo("category", categoryName)
+                                .get()
+                                .addOnSuccessListener(songQueryDocumentSnapshots -> {
+                                    for (QueryDocumentSnapshot songDocumentSnapshot : songQueryDocumentSnapshots) {
+                                        SongModel song = songDocumentSnapshot.toObject(SongModel.class);
+                                        songs.add(song);
+                                    }
+                                    CategoryModel categoryNew = new CategoryModel(categoryName, songs);
+                                    categoryList.add(categoryNew);
+                                    categoryData.setValue(categoryList);
+                                });
+                    }
+                });
+    }
+
+    private void loadAlbumData() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        ListModel listModel = new ListModel("Album", new ArrayList<>());
+
+        db.collection("album")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String albumName = documentSnapshot.getString("nameAlbum");
+
+                        AlbumModel albumModel = documentSnapshot.toObject(AlbumModel.class);
+                        List<SongModel> songs = new ArrayList<>();
+
+                        db.collection("songs")
+                                .whereEqualTo("nameAlbum", albumName)
+                                .get()
+                                .addOnSuccessListener(songQueryDocumentSnapshots -> {
+                                    for (QueryDocumentSnapshot songDocumentSnapshot : songQueryDocumentSnapshots) {
+                                        SongModel song = songDocumentSnapshot.toObject(SongModel.class);
+                                        songs.add(song);
+                                    }
+
+                                    AlbumModel updatedAlbumModel = new AlbumModel(
+                                            albumModel.getImageURL(),
+                                            albumModel.getNameAlbum(),
+                                            songs
+                                    );
+
+                                    listModel.getAlbum().add(updatedAlbumModel);
+
+                                    if (listModel.getAlbum().size() == queryDocumentSnapshots.size()) {
+                                        albumData.setValue(Collections.singletonList(listModel));
+                                    }
+                                });
+                    }
+                });
+    }
+
+
+    private List<SongModel> loadLatestSongsData() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        List<SongModel> latestSongsList = new ArrayList<>();
+        db.collection("songs")
+                .orderBy("dateTime", Query.Direction.DESCENDING)
+                .limit(5)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                         SongModel songModel = documentSnapshot.toObject(SongModel.class);
-                        songList.add(songModel);
+                        latestSongsList.add(songModel);
                     }
-                    songData.setValue(songList);
+                    songData.setValue(latestSongsList);
                 });
+        return latestSongsList;
     }
 }
 
