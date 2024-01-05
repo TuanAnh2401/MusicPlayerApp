@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".Fragments.HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -40,7 +41,19 @@
             android:layout_marginStart="10dp"
             app:layout_constraintEnd_toEndOf="@+id/viewSlide"
             app:layout_constraintStart_toStartOf="@+id/viewSlide"
-            app:layout_constraintTop_toBottomOf="@+id/slider_indicator" />
+            app:layout_constraintTop_toBottomOf="@+id/viewSlide" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvList"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/rcvCategory"
+            app:layout_constraintStart_toStartOf="@+id/rcvCategory"
+            app:layout_constraintTop_toBottomOf="@+id/rcvCategory">
+
+        </androidx.recyclerview.widget.RecyclerView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

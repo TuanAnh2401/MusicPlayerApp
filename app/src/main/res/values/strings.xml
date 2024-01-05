@@ -17,4 +17,8 @@
     <string name="forget_password">Đặt lại mật khẩu?</string>
     <string name="reset_passowrd">Đặt lại mất khẩu</string>
     <string name="check_password">Mật khẩu (ít nhất 6 kí tự)</string>
+    <string name="library">Thư viện</string>
+    <string name="home">Trang chủ</string>
+    <string name="profile">Cá nhân</string>
+    <string name="random_music">Phát ngẫu nhiên</string>
 </resources>

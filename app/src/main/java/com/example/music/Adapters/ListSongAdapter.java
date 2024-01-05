@@ -15,13 +15,10 @@ import com.example.music.R;
 
 import java.util.List;
 
-public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
-
+public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.ListSongViewHolder>{
     private List<SongModel> songList;
-    public SongAdapter() {
-    }
 
-    public SongAdapter(List<SongModel> songList) {
+    public ListSongAdapter(List<SongModel> songList) {
         this.songList = songList;
     }
 
@@ -32,13 +29,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     @NonNull
     @Override
-    public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.song_item, parent, false);
-        return new SongViewHolder(view);
+    public ListSongAdapter.ListSongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_song_item, parent, false);
+        return new ListSongAdapter.ListSongViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ListSongAdapter.ListSongViewHolder holder, int position) {
         SongModel song = songList.get(position);
         if (song == null) {
             return;
@@ -48,6 +45,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 .into(holder.imgSong);
 
         holder.txtNameSong.setText(song.getName());
+        holder.txtSingerSong.setText(song.getSinger());
     }
 
     @Override
@@ -55,14 +53,16 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         return songList != null ? songList.size() : 0;
     }
 
-    public class SongViewHolder extends RecyclerView.ViewHolder {
+    public class ListSongViewHolder extends RecyclerView.ViewHolder {
         private ImageView imgSong;
         private TextView txtNameSong;
+        private TextView txtSingerSong;
 
-        public SongViewHolder(@NonNull View itemView) {
+        public ListSongViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgSong = itemView.findViewById(R.id.img_song);
-            txtNameSong = itemView.findViewById(R.id.txtNameSong);
+            imgSong = itemView.findViewById(R.id.img_list_song);
+            txtNameSong = itemView.findViewById(R.id.tv_song_name);
+            txtSingerSong = itemView.findViewById(R.id.tv_singer_name);
         }
     }
 }
