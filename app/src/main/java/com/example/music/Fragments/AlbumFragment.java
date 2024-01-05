@@ -48,7 +48,6 @@ public class AlbumFragment extends Fragment {
                 loadAllAlbumsData(allSongs);
             }
 
-            // Update UI with selected album's name and image
             if (selectedAlbum != null) {
                 updateUI(selectedAlbum);
             }
@@ -70,7 +69,6 @@ public class AlbumFragment extends Fragment {
         btnShuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle shuffle button click
             }
         });
 
