@@ -9,10 +9,12 @@ import android.widget.FrameLayout;
 
 import com.example.music.Fragments.HomeFragment;
 import com.example.music.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
     private FrameLayout fragmentHolder;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,9 +23,18 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentHolder = findViewById(R.id.main_frame_layout);
 
-        if (savedInstanceState == null) {
-            setFragment(new HomeFragment());
-        }
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.home) {
+                setFragment(new HomeFragment());
+                return true;
+            }
+            return false;
+        });
+
+        bottomNavigationView.setSelectedItemId(R.id.home);
 
     }
 

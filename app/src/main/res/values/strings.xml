@@ -21,4 +21,7 @@
     <string name="home">Trang chủ</string>
     <string name="profile">Cá nhân</string>
     <string name="random_music">Phát ngẫu nhiên</string>
+    <string name="now_playing">Bài hát đang phát</string>
+    <string name="song_name">Tên bài hát</string>
+    <string name="singer_name">Tên ca sĩ</string>
 </resources>

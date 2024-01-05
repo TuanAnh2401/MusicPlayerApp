@@ -2,6 +2,7 @@ package com.example.music.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,13 +24,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     private Context mContext;
     private List<SongModel> songList;
+    private List<SongModel> allSongs;
 
     public SongAdapter(Context mContext) {
         this.mContext = mContext;
     }
 
-    public void setData(List<SongModel> list) {
+    public void setData(List<SongModel> list, List<SongModel> allSongs) {
         this.songList = list;
+        this.allSongs = allSongs;
         notifyDataSetChanged();
     }
 
@@ -51,22 +54,33 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 .into(holder.imgSong);
 
         holder.txtNameSong.setText(song.getName());
-
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the SongPlayerActivity with the selected song
                 int adapterPosition = holder.getAdapterPosition();
                 if (adapterPosition != RecyclerView.NO_POSITION) {
-                    Intent intent = new Intent(mContext, SongPlayerActivity.class);
-                    intent.putExtra("position", adapterPosition);
-                    intent.putParcelableArrayListExtra("songList", new ArrayList<>(songList));
-                    mContext.startActivity(intent);
+                    int allSongsPosition = findSongPositionInAllSongs(song);
+                    if (allSongsPosition != -1) {
+                        Intent intent = new Intent(mContext, SongPlayerActivity.class);
+                        intent.putExtra("position", allSongsPosition);
+                        intent.putParcelableArrayListExtra("songList", new ArrayList<>(allSongs));
+                        mContext.startActivity(intent);
+                    }
                 }
             }
         });
     }
-
+    private int findSongPositionInAllSongs(SongModel targetSong) {
+        if (allSongs != null && targetSong != null) {
+            for (int i = 0; i < allSongs.size(); i++) {
+                SongModel currentSong = allSongs.get(i);
+                if (currentSong != null && currentSong.getId().equals(targetSong.getId())) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 
     @Override
     public int getItemCount() {

@@ -20,6 +20,7 @@ import com.example.music.Models.AlbumModel;
 import com.example.music.Models.CategoryModel;
 import com.example.music.Models.ListModel;
 import com.example.music.Models.SliderModel;
+import com.example.music.Models.SongModel;
 import com.example.music.R;
 import com.example.music.Utils.SliderTimer;
 import com.example.music.Viewmodel.HomeViewModel;
@@ -43,7 +44,6 @@ public class HomeFragment extends Fragment {
     private ListAdapter listAdapter;
 
     private HomeViewModel homeViewModel;
-    private List<ListModel> mListAlbum = new ArrayList<>(); // Initialize the list
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +76,9 @@ public class HomeFragment extends Fragment {
                 sliderIndicator.setupWithViewPager(slider);
                 timer.scheduleAtFixedRate(new SliderTimer(getActivity(), slider, sliderList.size()), 3000, 7000);
             }
+        });
+        homeViewModel.getAllSongsData().observe(getViewLifecycleOwner(), allSongs -> {
+            categoryAdapter.setAllSongs(allSongs);
         });
 
         LinearLayoutManager linearLayoutManagerCategory = new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false);

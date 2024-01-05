@@ -25,7 +25,11 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<SliderModel>> sliderData = new MutableLiveData<>();
     private MutableLiveData<List<SongModel>> songData = new MutableLiveData<>();
     private MutableLiveData<List<ListModel>> albumData = new MutableLiveData<>();
-
+    private MutableLiveData<List<SongModel>> allSongsData = new MutableLiveData<>();
+    public LiveData<List<SongModel>> getAllSongsData() {
+        loadAllSongs();
+        return allSongsData;
+    }
 
     public LiveData<List<CategoryModel>> getCategoryData() {
         loadCategoryData();
@@ -76,6 +80,7 @@ public class HomeViewModel extends ViewModel {
                                 .addOnSuccessListener(songQueryDocumentSnapshots -> {
                                     for (QueryDocumentSnapshot songDocumentSnapshot : songQueryDocumentSnapshots) {
                                         SongModel song = songDocumentSnapshot.toObject(SongModel.class);
+                                        song.setId(songDocumentSnapshot.getId());
                                         songs.add(song);
                                     }
                                     CategoryModel categoryNew = new CategoryModel(categoryName, songs);
@@ -106,6 +111,7 @@ public class HomeViewModel extends ViewModel {
                                 .addOnSuccessListener(songQueryDocumentSnapshots -> {
                                     for (QueryDocumentSnapshot songDocumentSnapshot : songQueryDocumentSnapshots) {
                                         SongModel song = songDocumentSnapshot.toObject(SongModel.class);
+                                        song.setId(songDocumentSnapshot.getId());
                                         songs.add(song);
                                     }
 
@@ -136,11 +142,28 @@ public class HomeViewModel extends ViewModel {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                         SongModel songModel = documentSnapshot.toObject(SongModel.class);
+                        songModel.setId(documentSnapshot.getId());
                         latestSongsList.add(songModel);
                     }
                     songData.setValue(latestSongsList);
                 });
         return latestSongsList;
     }
+    public void loadAllSongs() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("songs")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<SongModel> allSongs = new ArrayList<>();
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        SongModel song = documentSnapshot.toObject(SongModel.class);
+                        song.setId(documentSnapshot.getId());
+                        allSongs.add(song);
+                    }
+                    allSongsData.setValue(allSongs);
+                });
+
+    }
+
 }
 

@@ -15,13 +15,19 @@ import com.example.music.Models.CategoryModel;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
     private Context mContext;
     private List<CategoryModel> mListCategory;
+    private List<SongModel> allSongs;
 
+    public void setAllSongs(List<SongModel> allSongs) {
+        this.allSongs = allSongs;
+        notifyDataSetChanged();
+    }
     public CategoryAdapter(Context mContext) {
         this.mContext = mContext;
     }
@@ -50,7 +56,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.songs.setLayoutManager(linearLayoutManager);
 
         SongAdapter songAdapter = new SongAdapter(mContext);
-        songAdapter.setData(category.getSongs());
+        songAdapter.setData(category.getSongs(), allSongs);
         holder.songs.setAdapter(songAdapter);
 
     }

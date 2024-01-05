@@ -1,24 +1,18 @@
 package com.example.music.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -98,12 +92,10 @@ public class SongPlayerActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
     }
@@ -121,6 +113,7 @@ public class SongPlayerActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 playNextSong();
+                mp.release(); // Release MediaPlayer after completion
             }
         });
 
@@ -209,7 +202,7 @@ public class SongPlayerActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer != null) {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     int currentPosition = mediaPlayer.getCurrentPosition();
                     seekbar.setProgress(currentPosition);
                     updateDurationPlayed(currentPosition);
@@ -218,9 +211,12 @@ public class SongPlayerActivity extends AppCompatActivity {
             }
         }, 0);
     }
+
+
     private void updateDurationPlayed(int progress) {
         duration_played.setText(formatDuration(progress));
     }
+
     private void updateUI() {
         song_name.setText(songList.get(position).getName());
         artist_name.setText(songList.get(position).getSinger());
@@ -232,22 +228,25 @@ public class SongPlayerActivity extends AppCompatActivity {
                 .error(R.drawable.error_image)
                 .into(cover_art);
     }
+
     private void playSong() {
         try {
-            mediaPlayer.reset();
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.reset();
+            }
+
             String linkMP3 = songList.get(position).getLinkMP3();
             new PrepareMediaTask(this).execute(linkMP3);
         } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
+
     private void playNextSong() {
         position = (position + 1) % songList.size();
         if (position < 0) {
             position = songList.size() - 1;
         }
-        Log.d("SongPlayerActivity", "Next Song - Position: " + position);
         playSong();
         updateUI();
     }
@@ -257,7 +256,6 @@ public class SongPlayerActivity extends AppCompatActivity {
         if (position < 0) {
             position = songList.size() - 1;
         }
-        Log.d("SongPlayerActivity", "Prev Song - Position: " + position);
         playSong();
         updateUI();
     }
@@ -269,7 +267,9 @@ public class SongPlayerActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        handler.removeCallbacksAndMessages(null);
     }
+
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -279,6 +279,7 @@ public class SongPlayerActivity extends AppCompatActivity {
             finish();
         }
     }
+
     private String formatDuration(int durationInMillis) {
         int seconds = (durationInMillis / 1000) % 60;
         int minutes = (durationInMillis / (1000 * 60)) % 60;

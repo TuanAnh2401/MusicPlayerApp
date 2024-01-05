@@ -4,6 +4,7 @@
     import android.os.Parcelable;
 
     public class SongModel implements Parcelable {
+        private String id;
         private String category;
         private String dateTime;
         private String linkImage;
@@ -12,7 +13,8 @@
         private String name;
         private String singer;
 
-        public SongModel(String category, String dateTime, String linkImage, String linkMP3, String lyric, String name, String singer) {
+        public SongModel(String id,String category, String dateTime, String linkImage, String linkMP3, String lyric, String name, String singer) {
+            this.id = id;
             this.category = category;
             this.dateTime = dateTime;
             this.linkImage = linkImage;
@@ -23,6 +25,13 @@
         }
 
         public SongModel() {
+        }
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
         }
 
         public String getCategory() {
@@ -81,6 +90,7 @@
             this.singer = singer;
         }
         protected SongModel(Parcel in) {
+            id = in.readString();
             category = in.readString();
             dateTime = in.readString();
             linkImage = in.readString();
@@ -92,6 +102,7 @@
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(id);
             dest.writeString(category);
             dest.writeString(dateTime);
             dest.writeString(linkImage);
