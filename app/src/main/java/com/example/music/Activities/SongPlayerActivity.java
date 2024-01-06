@@ -10,13 +10,22 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.bumptech.glide.Glide;
+import com.example.music.Dao.SongDao;
+import com.example.music.Database.AppDatabase;
+
+import com.example.music.Entity.SongEntity;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class SongPlayerActivity extends AppCompatActivity {
@@ -24,8 +33,9 @@ public class SongPlayerActivity extends AppCompatActivity {
     private List<SongModel> songList;
     private MediaPlayer mediaPlayer;
 
+
     private TextView song_name, artist_name, duration_played, duration_total;
-    private ImageView cover_art, nextbtn, prevbtn, backbtn, repeatbtn,shufflebtn;
+    private ImageView cover_art, nextbtn, prevbtn, backbtn, repeatbtn,shufflebtn,downloadbtn;
     private FloatingActionButton playpausebtn;
     private SeekBar seekbar;
     private boolean isRepeat = false;
@@ -36,13 +46,17 @@ public class SongPlayerActivity extends AppCompatActivity {
     private boolean isSeeking = false;
     private boolean isStartRequested = false;
     private boolean isShuffle = false;
-
     private int progress = 0;
+
+    private AppDatabase appDatabase;
+    private SongDao songDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_player);
+        appDatabase = AppDatabase.getInstance(getApplicationContext());
+        songDao = appDatabase.songDao();
         initViews();
         getIntentMethod();
         initSeekBar();
@@ -64,7 +78,7 @@ public class SongPlayerActivity extends AppCompatActivity {
         backbtn = findViewById(R.id.back_btn);
         repeatbtn = findViewById(R.id.id_repeat);
         shufflebtn = findViewById(R.id.id_shuffle);
-
+        downloadbtn = findViewById(R.id.btn_download);
         shufflebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,6 +112,13 @@ public class SongPlayerActivity extends AppCompatActivity {
                 playPrevSong();
             }
         });
+        downloadbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                downloadCurrentSong();
+            }
+        });
+
     }
 
     private void getIntentMethod() {
@@ -123,6 +144,70 @@ public class SongPlayerActivity extends AppCompatActivity {
                 isSeeking = false;
             }
         });
+    }
+    private void downloadCurrentSong() {
+        if (position >= 0 && position < songList.size()) {
+            SongModel currentSong = songList.get(position);
+            SongEntity songEntity = new SongEntity();
+            songEntity.setId(currentSong.getId());
+            songEntity.setCategory(currentSong.getCategory());
+            songEntity.setDateTime(getCurrentDateTime());
+            songEntity.setLinkImage(currentSong.getLinkImage());
+            songEntity.setLinkMP3(currentSong.getLinkMP3());
+            songEntity.setLyric(currentSong.getLyric());
+            songEntity.setName(currentSong.getName());
+            songEntity.setSinger(currentSong.getSinger());
+
+            new SaveSongAsyncTask(this).execute(songEntity);
+        }
+    }
+
+    private static class SaveSongAsyncTask extends AsyncTask<SongEntity, Void, Boolean> {
+        private final WeakReference<SongPlayerActivity> activityReference;
+
+        SaveSongAsyncTask(SongPlayerActivity activity) {
+            this.activityReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected Boolean doInBackground(SongEntity... songEntities) {
+            try {
+                SongPlayerActivity activity = activityReference.get();
+                if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                    return false;
+                }
+                AppDatabase appDatabase = AppDatabase.getInstance(activity.getApplicationContext());
+                SongEntity existingSong = appDatabase.songDao().getSongById(songEntities[0].getId());
+                if (existingSong == null) {
+                    appDatabase.songDao().insertSong(songEntities[0]);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            SongPlayerActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                return;
+            }
+            if (success) {
+                Toast.makeText(activity, "Tải bài hát thành công", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(activity, "Bài hát đã tồn tại trong danh sách", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private String getCurrentDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        return dateFormat.format(new Date());
     }
     private void initMediaPlayer() {
         mediaPlayer = new MediaPlayer();
