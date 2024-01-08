@@ -261,6 +261,7 @@ public class SongPlayerActivity extends AppCompatActivity {
                 handleMediaPlayerPrepared(mp);
             }
         });
+
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -451,7 +452,6 @@ public class SongPlayerActivity extends AppCompatActivity {
             if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                 mediaPlayer.reset();
             }
-
             String linkMP3 = songList.get(position).getLinkMP3();
 
             if (isMediaStoreAudio(linkMP3)) {
@@ -464,12 +464,12 @@ public class SongPlayerActivity extends AppCompatActivity {
                     mediaPlayer.setDataSource(fileDescriptor, assetFileDescriptor.getStartOffset(), assetFileDescriptor.getLength());
                     mediaPlayer.prepare();
                     mediaPlayer.start();
+                    isPlaying = true;
                     assetFileDescriptor.close();
                 }
             } else {
                 new PrepareMediaTask(this).execute(linkMP3);
             }
-
             updateUI();
             seekbar.setProgress(0);
             updateDurationPlayed(0);
@@ -494,14 +494,6 @@ public class SongPlayerActivity extends AppCompatActivity {
                 position = songList.size() - 1;
             }
             boolean wasPlaying = mediaPlayer.isPlaying();
-            if (mediaPlayer != null) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-            initMediaPlayer();
-            playSong();
-            updateUI();
             if (wasPlaying) {
                 isStartRequested = true;
                 progress = 0;
@@ -513,6 +505,16 @@ public class SongPlayerActivity extends AppCompatActivity {
                 isPlaying = true;
                 updateSeekBar();
             }
+
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+            initMediaPlayer();
+            playSong();
+            updateUI();
+
         }
     }
     private void playPrevSong() {
