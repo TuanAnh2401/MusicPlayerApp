@@ -13,6 +13,10 @@ import java.util.List;
 public interface SongDao {
     @Insert
     void insertSong(SongEntity song);
+    @Insert
+    void insertAllSongs(List<SongEntity> songs);
+    @Query("DELETE FROM songs WHERE id = :songId")
+    void deleteSongById(String songId);
     @Query("SELECT * FROM songs WHERE id = :songId")
     SongEntity getSongById(String songId);
     @Query("SELECT * FROM songs")

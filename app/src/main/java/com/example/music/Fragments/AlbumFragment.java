@@ -33,6 +33,7 @@ public class AlbumFragment extends Fragment {
     private RecyclerView songRecyclerView;
     private ImageButton btnBack;
     AppDatabase appDatabase;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album, container, false);
@@ -85,7 +86,7 @@ public class AlbumFragment extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         songRecyclerView.setLayoutManager(layoutManager);
 
-        ListSongAdapter listSongAdapter = new ListSongAdapter(allSongs, getContext(),appDatabase);
+        ListSongAdapter listSongAdapter = new ListSongAdapter(allSongs, getContext(), appDatabase);
         songRecyclerView.setAdapter(listSongAdapter);
     }
 

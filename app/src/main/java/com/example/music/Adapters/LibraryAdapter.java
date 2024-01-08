@@ -1,12 +1,15 @@
 package com.example.music.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -57,7 +60,9 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
 
         Glide.with(holder.itemView.getContext())
                 .load(song.getLinkImage())
+                .placeholder(R.drawable.error_image)
                 .into(holder.img_library_song);
+
 
         holder.library_song_name.setText(song.getName());
         holder.library_singer_name.setText(song.getSinger());
@@ -75,6 +80,32 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
                 }
             }
         });
+        holder.btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    deleteSongFromDatabase(song.getId());
+                }
+            }
+        });
+    }
+    private void deleteSongFromDatabase(String songId) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                appDatabase.songDao().deleteSongById(songId);
+
+                if (mContext instanceof Activity) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mContext, "Bài hát đã được xóa thành công", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -86,12 +117,14 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
         private ImageView img_library_song;
         private TextView library_song_name;
         private TextView library_singer_name;
+        private ImageView btn_delete;
 
         public LibraryViewHolder(@NonNull View itemView) {
             super(itemView);
             img_library_song = itemView.findViewById(R.id.img_library_song);
             library_song_name = itemView.findViewById(R.id.library_song_name);
             library_singer_name = itemView.findViewById(R.id.library_singer_name);
+            btn_delete = itemView.findViewById(R.id.btn_delete);
         }
     }
 }

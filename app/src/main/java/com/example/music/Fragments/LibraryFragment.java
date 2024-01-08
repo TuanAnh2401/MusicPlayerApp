@@ -33,8 +33,9 @@ public class LibraryFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private Button btnShuffle;
     private ImageButton btnBack;
-    private AppDatabase appDatabase;
     private ArrayList<SongModel> songModels;
+
+    private AppDatabase appDatabase;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -115,4 +116,5 @@ public class LibraryFragment extends Fragment {
             startActivity(intent);
         }
     }
+
 }

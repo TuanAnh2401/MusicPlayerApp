@@ -1,11 +1,17 @@
 package com.example.music.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -20,6 +26,8 @@ import com.example.music.Entity.SongEntity;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.io.FileDescriptor;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -50,10 +58,14 @@ public class SongPlayerActivity extends AppCompatActivity {
 
     private AppDatabase appDatabase;
     private SongDao songDao;
+    private Context mContext;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
+
         setContentView(R.layout.activity_song_player);
         appDatabase = AppDatabase.getInstance(getApplicationContext());
         songDao = appDatabase.songDao();
@@ -158,7 +170,39 @@ public class SongPlayerActivity extends AppCompatActivity {
             songEntity.setName(currentSong.getName());
             songEntity.setSinger(currentSong.getSinger());
 
-            new SaveSongAsyncTask(this).execute(songEntity);
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    SongEntity existingSong = appDatabase.songDao().getSongById(currentSong.getId());
+                    if (existingSong == null) {
+                        appDatabase.songDao().insertSong(songEntity);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mContext, "Tải bài hát thành công", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                showDuplicateIdError();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    private void showDuplicateIdError() {
+        if (mContext instanceof Activity) {
+            ((Activity) mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(mContext, "Bài hát đã tồn tại trong danh sách", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -353,7 +397,7 @@ public class SongPlayerActivity extends AppCompatActivity {
         } else {
             isStartRequested = true;
             if (mediaPlayer != null && !isSeeking) {
-                mediaPlayer.seekTo(progress); // Sử dụng giá trị progress
+                mediaPlayer.seekTo(progress);
                 updateDurationPlayed(progress);
             }
         }
@@ -407,8 +451,25 @@ public class SongPlayerActivity extends AppCompatActivity {
             if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                 mediaPlayer.reset();
             }
+
             String linkMP3 = songList.get(position).getLinkMP3();
-            new PrepareMediaTask(this).execute(linkMP3);
+
+            if (isMediaStoreAudio(linkMP3)) {
+                ContentResolver contentResolver = getContentResolver();
+                Uri mediaUri = Uri.parse(linkMP3);
+                AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(mediaUri, "r");
+
+                if (assetFileDescriptor != null) {
+                    FileDescriptor fileDescriptor = assetFileDescriptor.getFileDescriptor();
+                    mediaPlayer.setDataSource(fileDescriptor, assetFileDescriptor.getStartOffset(), assetFileDescriptor.getLength());
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                    assetFileDescriptor.close();
+                }
+            } else {
+                new PrepareMediaTask(this).execute(linkMP3);
+            }
+
             updateUI();
             seekbar.setProgress(0);
             updateDurationPlayed(0);
@@ -416,6 +477,14 @@ public class SongPlayerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private boolean isMediaStoreAudio(String linkMP3) {
+        Uri mediaUri = Uri.parse(linkMP3);
+
+        return ContentResolver.SCHEME_CONTENT.equals(mediaUri.getScheme())
+                && MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.getHost().equals(mediaUri.getHost());
+    }
+
     private void playNextSong() {
         if (isRepeat) {
             playSong();

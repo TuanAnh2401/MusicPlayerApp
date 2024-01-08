@@ -28,6 +28,7 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="39dp"
+            android:layout_toStartOf="@+id/btn_delete"
             android:layout_toEndOf="@+id/img_library_song"
             android:text="Song Name"
             android:textColor="@android:color/black"
@@ -42,9 +43,22 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="39dp"
+            android:layout_toStartOf="@+id/btn_delete"
             android:layout_toEndOf="@+id/img_library_song"
             android:text="Singer Name"
             android:textColor="@android:color/black"
             android:textSize="12sp" />
+        <ImageView
+            android:id="@+id/btn_delete"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/baseline_delete" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
