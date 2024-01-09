@@ -3,10 +3,13 @@ package com.example.music.Activities;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import com.bumptech.glide.Glide;
@@ -34,6 +37,7 @@ import com.example.music.Database.AppDatabase;
 import com.example.music.Entity.SongEntity;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
+import com.example.music.Utils.MusicPlayerBroadcastReceiver;
 import com.example.music.Utils.MusicService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -55,6 +59,7 @@ public class SongPlayerActivity extends AppCompatActivity {
     private FloatingActionButton playpausebtn;
     private SeekBar seekbar;
     private boolean isRepeat = false;
+    private boolean isServiceBound = false;
 
     private int position = -1;
     private Handler handler = new Handler();
@@ -68,7 +73,15 @@ public class SongPlayerActivity extends AppCompatActivity {
     private SongDao songDao;
     private Context mContext;
     private MusicService musicService;
+    private MusicPlayerBroadcastReceiver receiver;
 
+    public void stopMusic(View view) {
+        isPlaying = true;
+        sendCustomNotification(isPlaying);
+        Intent stopIntent = new Intent(MusicPlayerBroadcastReceiver.ACTION_STOP);
+        sendBroadcast(stopIntent);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +89,16 @@ public class SongPlayerActivity extends AppCompatActivity {
         mContext = this;
 
         Intent intent = new Intent(this, MusicService.class);
+        if (!isServiceRunning(MusicService.class)) {
+            startService(intent);
+        }
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        receiver = new MusicPlayerBroadcastReceiver();
+        receiver = new MusicPlayerBroadcastReceiver();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MusicPlayerBroadcastReceiver.ACTION_STOP);
+        registerReceiver(receiver, filter);
 
         setContentView(R.layout.activity_song_player);
         appDatabase = AppDatabase.getInstance(getApplicationContext());
@@ -405,14 +427,8 @@ public class SongPlayerActivity extends AppCompatActivity {
         }
     }
     private void togglePlayPause() {
-        if (musicService != null) {
-            if (musicService.isPlaying()) {
-                musicService.pause();
-            } else {
-                musicService.play();
-            }
-            updatePlayPauseIcon();
-        }
+        Intent toggleIntent = new Intent(MusicService.ACTION_TOGGLE_PLAY_PAUSE);
+        sendBroadcast(toggleIntent);
         if (isPlaying) {
             mediaPlayer.pause();
             sendCustomNotification(isPlaying);
@@ -486,12 +502,12 @@ public class SongPlayerActivity extends AppCompatActivity {
                     mediaPlayer.setDataSource(fileDescriptor, assetFileDescriptor.getStartOffset(), assetFileDescriptor.getLength());
                     mediaPlayer.prepare();
                     mediaPlayer.start();
-                    isPlaying = true;
                     assetFileDescriptor.close();
                 }
             } else {
                 new PrepareMediaTask(this).execute(linkMP3);
             }
+            isPlaying = true;
             sendCustomNotification(isPlaying);
             updateUI();
             seekbar.setProgress(0);
@@ -502,13 +518,12 @@ public class SongPlayerActivity extends AppCompatActivity {
     }
 
     private void sendCustomNotification(boolean isPlaying) {
-        String imageUrl = songList.get(position).getLinkImage();
-
         int notificationId = 1;
         String channelId = "channel_id";
-        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
-        remoteViews.setImageViewResource(R.id.cover_art, R.drawable.ic_image);
 
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+
+        remoteViews.setImageViewResource(R.id.cover_art, R.drawable.ic_image);
         remoteViews.setTextViewText(R.id.song_name, songList.get(position).getName());
         remoteViews.setTextViewText(R.id.artist_name, songList.get(position).getSinger());
 
@@ -585,18 +600,34 @@ public class SongPlayerActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
             musicService = binder.getService();
+            isServiceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             musicService = null;
+            isServiceBound = false;
         }
     };
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(serviceConnection);
+        if (isServiceBound) {
+            unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+        }
+    }
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
     @Override
     public void onBackPressed() {

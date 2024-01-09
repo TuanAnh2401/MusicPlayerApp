@@ -41,5 +41,13 @@
             android:name=".Utils.MusicService"
             android:enabled="true"
             android:exported="false" />
+        <receiver android:name=".Utils.MusicPlayerBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.STOP" />
+                <action android:name="android.intent.action.TOGGLE_PLAY_PAUSE" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

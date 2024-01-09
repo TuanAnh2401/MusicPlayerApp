@@ -1,14 +1,41 @@
 package com.example.music.Utils;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
-import android.media.MediaPlayer;
+
 import androidx.annotation.Nullable;
 
 public class MusicService extends Service {
-    private MediaPlayer mediaPlayer;
+    public static final String ACTION_STOP = "com.example.music.STOP";
+    public static final String ACTION_TOGGLE_PLAY_PAUSE = "com.example.music.TOGGLE_PLAY_PAUSE";
+
+    private boolean isPlaying = false;
+    private BroadcastReceiver playPauseReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null && intent.getAction().equals(ACTION_TOGGLE_PLAY_PAUSE)) {
+                togglePlayPause();
+            }
+        }
+    };
+
+    private void togglePlayPause() {
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                pause();
+            } else {
+                play();
+            }
+            updateNotification();
+        }
+    }
+
+    private static MediaPlayer mediaPlayer;
     private final IBinder binder = new LocalBinder();
 
     public class LocalBinder extends Binder {
@@ -33,17 +60,18 @@ public class MusicService extends Service {
         createMediaPlayer();
     }
 
-    private void createMediaPlayer() {
+    private static void createMediaPlayer() {
         if (mediaPlayer != null) {
-            mediaPlayer.pause();
             mediaPlayer.stop();
             mediaPlayer.release();
+            mediaPlayer = null;
         }
+
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                stop(); // Stop khi hoàn thành một bài hát
+                stop();
             }
         });
     }
@@ -56,28 +84,29 @@ public class MusicService extends Service {
     }
 
     public void pause() {
-        if (mediaPlayer.isPlaying()) {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
-            updateNotification();
         }
     }
 
-    public void stop() {
+    public static void stop() {
         mediaPlayer.reset();
-        createMediaPlayer(); // Tạo mới mediaPlayer sau khi stop
+        createMediaPlayer();
         updateNotification();
     }
 
-    private void updateNotification() {
+    private static void updateNotification() {
         // Cập nhật notification
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (playPauseReceiver != null) {
+            unregisterReceiver(playPauseReceiver);
+        }
         if (mediaPlayer != null) {
             mediaPlayer.release(); // Đảm bảo giải phóng resources khi dịch vụ bị hủy
         }
     }
 }
-
