@@ -444,7 +444,7 @@ public class SongPlayerActivity extends AppCompatActivity {
         String linkImage = songList.get(position).getLinkImage();
         Glide.with(this)
                 .load(linkImage)
-                .error(R.drawable.error_image)
+                .error(R.drawable.ic_image)
                 .into(cover_art);
     }
     private void playSong() {

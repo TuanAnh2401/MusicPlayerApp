@@ -1,6 +1,8 @@
 package com.example.music.Fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -44,7 +46,6 @@ public class SignInFragment extends Fragment {
     private ProgressBar prbSignIn;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -138,7 +139,7 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    private void signInWithEmail(String email, String password) {
+    public void signInWithEmail(String email, String password) {
         prbSignIn.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -147,6 +148,7 @@ public class SignInFragment extends Fragment {
                         prbSignIn.setVisibility(View.INVISIBLE);
 
                         if (task.isSuccessful()) {
+                            saveLoginInfo(email,password);
                             Intent intent = new Intent(getActivity(), MainActivity.class);
                             getActivity().startActivity(intent);
                             getActivity().finish();
@@ -193,6 +195,14 @@ public class SignInFragment extends Fragment {
                 });
     }
 
+    private void saveLoginInfo(String email, String password) {
+        SharedPreferences preferences = getActivity().getSharedPreferences("LoginInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putString("email", email);
+        editor.putString("password", password);
+        editor.apply();
+    }
 
     private void setFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();

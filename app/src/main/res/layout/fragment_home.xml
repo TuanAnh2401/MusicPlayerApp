@@ -34,6 +34,39 @@
             app:tabGravity="center"
             app:tabIndicatorHeight="0dp"/>
 
+        <LinearLayout
+            android:id="@+id/layoutSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="@+id/viewSlide"
+            app:layout_constraintStart_toStartOf="@+id/viewSlide"
+            app:layout_constraintTop_toBottomOf="@+id/viewSlide">
+
+            <ImageView
+                android:id="@+id/imgSearch"
+                android:layout_width="150px"
+                android:layout_height="70px"
+                android:src="@drawable/ic_search" />
+
+            <EditText
+                android:id="@+id/txtSearch"
+                android:layout_width="520px"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="@string/text_search"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/viewSlide"
+            app:layout_constraintStart_toStartOf="@+id/viewSlide"
+            app:layout_constraintTop_toBottomOf="@+id/layoutSearch" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rcvCategory"
             android:layout_width="0dp"
@@ -41,7 +74,7 @@
             android:layout_marginStart="10dp"
             app:layout_constraintEnd_toEndOf="@+id/viewSlide"
             app:layout_constraintStart_toStartOf="@+id/viewSlide"
-            app:layout_constraintTop_toBottomOf="@+id/viewSlide" />
+            app:layout_constraintTop_toBottomOf="@+id/rcvSearch" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rcvList"

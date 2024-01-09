@@ -28,6 +28,7 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<SongModel>> songData = new MutableLiveData<>();
     private MutableLiveData<List<ListModel>> albumData = new MutableLiveData<>();
     private MutableLiveData<List<SongModel>> allSongsData = new MutableLiveData<>();
+    private MutableLiveData<List<CategoryModel>> searchResultsData = new MutableLiveData<>();
     private AppDatabase appDatabase;
     public HomeViewModel() {
     }
@@ -38,7 +39,10 @@ public class HomeViewModel extends ViewModel {
         loadAllSongs();
         return allSongsData;
     }
-
+    public LiveData<List<CategoryModel>> getSearchResultsData(String key) {
+        searchSongs(key);
+        return searchResultsData;
+    }
     public LiveData<List<CategoryModel>> getCategoryData() {
         loadCategoryData();
         return categoryData;
@@ -172,8 +176,29 @@ public class HomeViewModel extends ViewModel {
                 });
 
     }
+    public void searchSongs(String keyword) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("songs")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<SongModel> searchResults = new ArrayList<>();
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        SongModel song = documentSnapshot.toObject(SongModel.class);
+                        song.setId(documentSnapshot.getId());
+                        if(song.getName().toLowerCase().contains(keyword.toLowerCase())||
+                                song.getCategory().toLowerCase().contains(keyword.toLowerCase())||
+                                song.getSinger().toLowerCase().contains(keyword.toLowerCase()))
+                            searchResults.add(song);
+                    }
+                    List<CategoryModel> categoryList = new ArrayList<>();
+                    CategoryModel category = new CategoryModel("Kết quả tìm kiếm", searchResults);
+                    categoryList.add(category);
+                    searchResultsData.setValue(categoryList);
+                });
+    }
     public LiveData<List<SongEntity>> getAllSongsDataFromDao() {
         return appDatabase.songDao().getAllSongsLiveData();
     }
+
 }
 

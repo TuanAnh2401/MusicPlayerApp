@@ -60,7 +60,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
 
         Glide.with(holder.itemView.getContext())
                 .load(song.getLinkImage())
-                .placeholder(R.drawable.error_image)
+                .placeholder(R.drawable.ic_image)
                 .into(holder.img_library_song);
 
 
