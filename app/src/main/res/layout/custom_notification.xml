@@ -1,0 +1,95 @@
+<!-- custom_notification_layout.xml -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/notification_layout"
+    android:background="@color/editText">
+
+    <ImageView
+        android:id="@+id/cover_art"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="16dp"
+        android:scaleType="centerCrop" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/cover_art"
+        android:layout_toStartOf="@id/id_stop"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/song_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.Compat.Notification.Title"
+            android:text="@string/song_name"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/artist_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.Compat.Notification.Line2"
+            android:text="@string/singer_name"
+            android:textSize="14sp"></TextView>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/id_stop"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:src="@drawable/ic_stop"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true" />
+
+    <!-- LinearLayout for Skip Previous, Play/Pause, and Skip Next buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cover_art"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/id_prev"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/baseline_skip_previous"
+            android:layout_gravity="center"
+            android:layout_centerVertical="true"/>
+
+
+        <Space
+            android:layout_width="35dp"
+            android:layout_height="35dp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/play_pause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/baseline_play"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:focusable="true"
+            android:clickable="true" />
+
+        <!-- Add a space of 20dp -->
+        <Space
+            android:layout_width="35dp"
+            android:layout_height="35dp"/>
+
+        <ImageView
+            android:id="@+id/id_next"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_skip_next"
+            android:layout_centerVertical="true"/>
+    </LinearLayout>
+</RelativeLayout>

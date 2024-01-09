@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.music.Activities.MainActivity;
+import com.example.music.Activities.MusicPlayerService;
 import com.example.music.Activities.SongPlayerActivity;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
@@ -61,9 +63,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 if (adapterPosition != RecyclerView.NO_POSITION) {
                     int allSongsPosition = findSongPositionInAllSongs(song);
                     if (allSongsPosition != -1) {
-                        Intent intent = new Intent(mContext, SongPlayerActivity.class);
+                        Intent intent = new Intent(mContext, MainActivity.class);
                         intent.putExtra("position", allSongsPosition);
                         intent.putParcelableArrayListExtra("songList", new ArrayList<>(allSongs));
+                        mContext.startService(intent);
                         mContext.startActivity(intent);
                     }
                 }
