@@ -1,30 +1,40 @@
 package com.example.music.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import android.app.Notification;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import com.bumptech.glide.Glide;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.example.music.Dao.SongDao;
 import com.example.music.Database.AppDatabase;
 
 import com.example.music.Entity.SongEntity;
 import com.example.music.Models.SongModel;
 import com.example.music.R;
+import com.example.music.Utils.MusicService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.FileDescriptor;
@@ -37,10 +47,8 @@ import java.util.Locale;
 import java.util.Random;
 
 public class SongPlayerActivity extends AppCompatActivity {
-
     private List<SongModel> songList;
     private MediaPlayer mediaPlayer;
-
 
     private TextView song_name, artist_name, duration_played, duration_total;
     private ImageView cover_art, nextbtn, prevbtn, backbtn, repeatbtn,shufflebtn,downloadbtn;
@@ -59,12 +67,16 @@ public class SongPlayerActivity extends AppCompatActivity {
     private AppDatabase appDatabase;
     private SongDao songDao;
     private Context mContext;
+    private MusicService musicService;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+
+        Intent intent = new Intent(this, MusicService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         setContentView(R.layout.activity_song_player);
         appDatabase = AppDatabase.getInstance(getApplicationContext());
@@ -393,14 +405,24 @@ public class SongPlayerActivity extends AppCompatActivity {
         }
     }
     private void togglePlayPause() {
+        if (musicService != null) {
+            if (musicService.isPlaying()) {
+                musicService.pause();
+            } else {
+                musicService.play();
+            }
+            updatePlayPauseIcon();
+        }
         if (isPlaying) {
             mediaPlayer.pause();
+            sendCustomNotification(isPlaying);
         } else {
             isStartRequested = true;
             if (mediaPlayer != null && !isSeeking) {
                 mediaPlayer.seekTo(progress);
                 updateDurationPlayed(progress);
             }
+            sendCustomNotification(isPlaying);
         }
         isPlaying = !isPlaying;
         updatePlayPauseIcon();
@@ -470,10 +492,39 @@ public class SongPlayerActivity extends AppCompatActivity {
             } else {
                 new PrepareMediaTask(this).execute(linkMP3);
             }
+            sendCustomNotification(isPlaying);
             updateUI();
             seekbar.setProgress(0);
             updateDurationPlayed(0);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendCustomNotification(boolean isPlaying) {
+        String imageUrl = songList.get(position).getLinkImage();
+
+        int notificationId = 1;
+        String channelId = "channel_id";
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+        remoteViews.setImageViewResource(R.id.cover_art, R.drawable.ic_image);
+
+        remoteViews.setTextViewText(R.id.song_name, songList.get(position).getName());
+        remoteViews.setTextViewText(R.id.artist_name, songList.get(position).getSinger());
+
+        int playPauseIcon = isPlaying ? R.drawable.baseline_pause : R.drawable.baseline_play;
+        remoteViews.setImageViewResource(R.id.play_pause, playPauseIcon);
+
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_app_icon)
+                .setCustomContentView(remoteViews)
+                .setCustomBigContentView(remoteViews)
+                .build();
+
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        try {
+            managerCompat.notify(notificationId, notification);
+        } catch (SecurityException e) {
             e.printStackTrace();
         }
     }
@@ -529,14 +580,23 @@ public class SongPlayerActivity extends AppCompatActivity {
             updateUI();
         }
     }
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
+            musicService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicService = null;
+        }
+    };
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        handler.removeCallbacksAndMessages(null);
+        unbindService(serviceConnection);
     }
     @Override
     public void onBackPressed() {
