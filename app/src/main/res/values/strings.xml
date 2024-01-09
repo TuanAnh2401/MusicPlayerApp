@@ -27,4 +27,10 @@
     <string name="music_for_you">Bài hát đã tải</string>
     <string name="text_search">Nhập từ khóa tìm kiếm</string>
     <string name="search">Tìm kiếm</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="mat_khau_info">Mật khẩu: ************</string>
+    <string name="new_password">Nhập mật khẩu mới</string>
+    <string name="confirm_password_new">Xác nhận thây đổi</string>
+    <string name="password_me">Nhập mật khẩu của bạn</string>
+    <string name="logout">Đăng Xuất</string>
 </resources>

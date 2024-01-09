@@ -42,7 +42,10 @@
             android:gravity="center"
             app:layout_constraintEnd_toEndOf="@+id/viewSlide"
             app:layout_constraintStart_toStartOf="@+id/viewSlide"
-            app:layout_constraintTop_toBottomOf="@+id/viewSlide">
+            app:layout_constraintTop_toBottomOf="@+id/viewSlide"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            >
 
             <ImageView
                 android:id="@+id/imgSearch"

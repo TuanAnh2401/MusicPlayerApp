@@ -30,6 +30,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -46,6 +47,7 @@ public class SignInFragment extends Fragment {
     private ProgressBar prbSignIn;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -139,7 +141,7 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    public void signInWithEmail(String email, String password) {
+    private void signInWithEmail(String email, String password) {
         prbSignIn.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -148,10 +150,8 @@ public class SignInFragment extends Fragment {
                         prbSignIn.setVisibility(View.INVISIBLE);
 
                         if (task.isSuccessful()) {
-                            saveLoginInfo(email,password);
-                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                            getActivity().startActivity(intent);
-                            getActivity().finish();
+                            String uid = mAuth.getCurrentUser().getUid();
+                            getUserInfoAndSaveLoginInfo(uid);
                         } else {
                             Toast.makeText(getContext(), "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
                             setButtonEnabledAndColor(true);
@@ -175,14 +175,8 @@ public class SignInFragment extends Fragment {
                         if (task.isSuccessful()) {
                             QuerySnapshot querySnapshot = task.getResult();
                             if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                                String userEmail = querySnapshot.getDocuments().get(0).getString("email");
-
-                                if (userEmail != null && !userEmail.isEmpty()) {
-                                    signInWithEmail(userEmail, password);
-                                } else {
-                                    Toast.makeText(getContext(), "Không tìm thấy email cho tài khoản này", Toast.LENGTH_SHORT).show();
-                                    setButtonEnabledAndColor(true);
-                                }
+                                String uid = querySnapshot.getDocuments().get(0).getId();
+                                getUserInfoAndSaveLoginInfo(uid);
                             } else {
                                 Toast.makeText(getContext(), "Tên tài khoản không tồn tại", Toast.LENGTH_SHORT).show();
                                 setButtonEnabledAndColor(true);
@@ -195,12 +189,47 @@ public class SignInFragment extends Fragment {
                 });
     }
 
-    private void saveLoginInfo(String email, String password) {
+    private void getUserInfoAndSaveLoginInfo(String uid) {
+        db.collection("users").document(uid)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document != null && document.exists()) {
+                                String fullName = document.getString("fullName");
+                                String userName = document.getString("userName");
+                                String userEmail = document.getString("email");
+
+                                if (fullName != null && userName != null && userEmail != null) {
+                                    saveLoginInfo(fullName, userName, userEmail);
+                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                    getActivity().startActivity(intent);
+                                    getActivity().finish();
+                                } else {
+                                    Toast.makeText(getContext(), "Không tìm thấy đủ thông tin cho tài khoản này", Toast.LENGTH_SHORT).show();
+                                    setButtonEnabledAndColor(true);
+                                }
+                            } else {
+                                Toast.makeText(getContext(), "Dữ liệu người dùng không tồn tại", Toast.LENGTH_SHORT).show();
+                                setButtonEnabledAndColor(true);
+                            }
+                        } else {
+                            Toast.makeText(getContext(), "Lỗi truy vấn dữ liệu người dùng", Toast.LENGTH_SHORT).show();
+                            setButtonEnabledAndColor(true);
+                        }
+                    }
+                });
+    }
+    private void saveLoginInfo(String fullName, String userName, String email) {
         SharedPreferences preferences = getActivity().getSharedPreferences("LoginInfo", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
+        editor.putString("fullName", fullName);
+        editor.putString("userName", userName);
         editor.putString("email", email);
-        editor.putString("password", password);
+        editor.apply();
         editor.apply();
     }
 

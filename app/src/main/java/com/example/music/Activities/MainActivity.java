@@ -20,6 +20,7 @@ import com.example.music.Database.AppDatabase;
 import com.example.music.Entity.SongEntity;
 import com.example.music.Fragments.HomeFragment;
 import com.example.music.Fragments.LibraryFragment;
+import com.example.music.Fragments.ProfileFragment;
 import com.example.music.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.library) {
                 getMP3();
                 setFragment(new LibraryFragment());
+                return true;
+            }else if (item.getItemId() == R.id.profile) {
+                setFragment(new ProfileFragment());
                 return true;
             }
             return false;

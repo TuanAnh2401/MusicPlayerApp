@@ -1,6 +1,8 @@
 package com.example.music.Fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -208,6 +210,7 @@ public class SignUpFragment extends Fragment {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
                                                                 if (task.isSuccessful()) {
+                                                                    saveLoginInfo(fullName,userName,email);
                                                                     Intent intent = new Intent(getActivity(), MainActivity.class);
                                                                     getActivity().startActivity(intent);
                                                                     getActivity().finish();
@@ -238,7 +241,16 @@ public class SignUpFragment extends Fragment {
             setButtonEnabledAndColor(true);
         }
     }
+    private void saveLoginInfo(String fullName, String userName, String email) {
+        SharedPreferences preferences = getActivity().getSharedPreferences("LoginInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
 
+        editor.putString("fullName", fullName);
+        editor.putString("userName", userName);
+        editor.putString("email", email);
+        editor.apply();
+        editor.apply();
+    }
     private void checkUserNameAvailability(String userName, OnUserNameCheckListener listener) {
         db.collection("users")
                 .whereEqualTo("userName", userName)
@@ -267,8 +279,8 @@ public class SignUpFragment extends Fragment {
         fragmentTransaction.commit();
     }
     private void checkInput() {
-        if (isFullNameValid(txtFullName)
-                && isFieldNotEmpty(txtUserName)
+        if (isFieldNotEmpty(txtFullName)
+                && isUserNameValid(txtUserName)
                 && isFieldNotEmpty(txtEmail)
                 && isPasswordValid(txtPassword)
                 && isFieldNotEmpty(txtConfirmPassword)) {
@@ -277,7 +289,7 @@ public class SignUpFragment extends Fragment {
             setButtonEnabledAndColor(false);
         }
     }
-    private boolean isFullNameValid(EditText editText) {
+    private boolean isUserNameValid(EditText editText) {
         String fullName = editText.getText().toString().trim();
         return !fullName.isEmpty() && fullName.matches("[a-zA-Z]+");
     }
