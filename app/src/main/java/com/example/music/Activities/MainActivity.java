@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private void getMP3() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 0);
+            getMP3();
         } else {
             ContentResolver contentResolver = getContentResolver();
             Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -69,18 +70,22 @@ public class MainActivity extends AppCompatActivity {
                     protected Void doInBackground(Void... voids) {
                         int titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
                         int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
+                        int filePathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
 
                         while (cursor.moveToNext()) {
                             String songTitle = cursor.getString(titleIndex);
                             long songId = cursor.getLong(idIndex);
-                            Uri songUri = Uri.withAppendedPath(uri, String.valueOf(songId));
+                            String filePath = cursor.getString(filePathIndex);
+                            if (filePath != null && filePath.toLowerCase().endsWith(".mp3")) {
+                                Uri songUri = Uri.withAppendedPath(uri, String.valueOf(songId));
 
-                            if (appDatabase.songDao().getSongById(String.valueOf(songId)) == null) {
-                                SongEntity songEntity = new SongEntity();
-                                songEntity.setId(String.valueOf(songId));
-                                songEntity.setName(songTitle);
-                                songEntity.setLinkMP3(songUri.toString());
-                                appDatabase.songDao().insertSong(songEntity);
+                                if (appDatabase.songDao().getSongById(String.valueOf(songId)) == null) {
+                                    SongEntity songEntity = new SongEntity();
+                                    songEntity.setId(String.valueOf(songId));
+                                    songEntity.setName(songTitle);
+                                    songEntity.setLinkMP3(songUri.toString());
+                                    appDatabase.songDao().insertSong(songEntity);
+                                }
                             }
                         }
 
